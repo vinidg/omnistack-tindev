@@ -1,3 +1,5 @@
+<img src="logo.jpg" alt="" />
+
 # omnistack-tindev
 Projeto realizado na Semana Omnistack da Rocketseat. NodeJs, ReactJs, React Native
 
