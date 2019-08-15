@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-community/async-storage'
 import { KeyboardAvoidingView, Platform, Text, StyleSheet, Image, 
-    TextInput, TouchableOpacity } from 'react-native';
+    TextInput, TouchableOpacity, Alert } from 'react-native';
 
 import api from '../services/api'
+import env from '../config/index'
 
 import logo from '../assets/logo.png'
 
 export default function Login({ navigation }) {
     const [user, setUser] = useState('')
+        const showAlertaConexao = () => {
+            Alert.alert(
+                'Erro de conexão',
+                'Erro ao conectar no servidor, tente novamente mais tarde !',
+                [
+                    {text: 'Ok'}
+                ])
+        }
 
     useEffect(() => {
         AsyncStorage.getItem('user').then(user => {
@@ -21,24 +30,23 @@ export default function Login({ navigation }) {
     async function handleLogin(){
         const response = await api.post('/devs', { username: user })
         .catch(error=> {
-            console.log(error.response);
-            
+            showAlertaConexao()
+            console.log(error);
         })
-            
+
         const { _id } = response.data
         
         await AsyncStorage.setItem('user', _id)
-
         navigation.navigate('Main', { user: _id })
     }
 
     return (
-    <KeyboardAvoidingView 
+        <KeyboardAvoidingView 
         style={styles.container}
         behavior="padding"
         enabled={Platform.OS == 'ios'}
         >
-        
+        {env.IS_PRODUCTION === 'false' && (<Text style={styles.textApi}>{`API host is ${env.API_HOST}`}</Text>)}
         <Image source={logo} />
         
         <TextInput 
@@ -65,6 +73,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 30
+    },
+
+    textApi: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        right: 0,
+        left: 100
     },
 
     input:{

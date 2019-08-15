@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react'
-import { SafeAreaView, Text, Image, View, StyleSheet, TouchableOpacity } from 'react-native'
+import { SafeAreaView, Text, Image, View, StyleSheet, TouchableOpacity, Alert } from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage'
 import io from 'socket.io-client'
 
 import api from '../services/api'
+import env from '../config/index'
 
 import logo from '../assets/logo.png'
 import like from '../assets/like.png'
@@ -14,6 +15,14 @@ export default function Main({ navigation }) {
     const id = navigation.getParam('user')
     const [users, setUsers] = useState([])
     const [matchDev, setMatchDev] = useState(null)
+    const showAlertaConexao = () => {
+        Alert.alert(
+            'Erro de conexão',
+            'Erro ao conectar no servidor, tente novamente mais tarde !',
+            [
+                {text: 'Ok'}
+            ])
+    }
 
     useEffect(() => {
         async function loadUsers() {
@@ -21,6 +30,9 @@ export default function Main({ navigation }) {
                 headers: {
                     user: id
                 }
+            }).catch(error => {
+                showAlertaConexao()
+                console.log(error)
             })
 
             setUsers(response.data)
@@ -30,7 +42,7 @@ export default function Main({ navigation }) {
     }, [id])
 
     useEffect(() => {
-        const socket = io('http://localhost:3333', {
+        const socket = io(env.API_HOST, {
             query: { user: id }
         })
 
@@ -46,6 +58,9 @@ export default function Main({ navigation }) {
 
         await api.post(`/devs/${user._id}/likes`, null, {
             headers: { user: id }
+        }).catch(error => {
+            showAlertaConexao()
+            console.log(error)
         })
         setUsers(rest)
     }
@@ -54,6 +69,9 @@ export default function Main({ navigation }) {
 
         await api.post(`/devs/${user._id}/dislikes`, null, {
             headers: { user: id }
+        }).catch(error => {
+            showAlertaConexao()
+            console.log(error)
         })
         setUsers(rest)
     }
